@@ -1,4 +1,5 @@
-'''import cv2
+'''
+import cv2
 import sklearn
 import glob
 from skimage.feature import hog
@@ -77,7 +78,7 @@ print(f'Accuracy: {accuracy}')
 '''
 
 
-'''import cv2
+import cv2
 import glob
 from skimage.feature import hog
 from sklearn.model_selection import train_test_split
@@ -159,7 +160,6 @@ for file_name, true_label, pred_label in incorrect_predictions:
     print(f'File: {file_name}, True Label: {true_label}, Predicted Label: {pred_label}')
 
 # T4 end ____________________________________________________________________________________
-'''
 
 
 
