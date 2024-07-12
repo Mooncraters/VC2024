@@ -24,7 +24,7 @@ def load_train_images(base_path):
     all_images = []
     all_labels = []
     for class_folder in sorted(os.listdir(base_path), key=int):
-        all_labels.append(class_folder)
+        all_labels.append(int(class_folder))
         class_folder_path = os.path.join(base_path, class_folder)
         if os.path.isdir(class_folder_path):
             class_images = load_images_from_folder(class_folder_path)
@@ -38,8 +38,9 @@ def load_test_images():
     return
 
 if __name__ == '__main__':
+    import constant
     # image folder path
-    base_path = 'VC2024/data/Train/'
+    base_path = constant.PATH_TO_TRAIN_DATA
 
     # load all the images
     all_images,all_labels = load_train_images(base_path)
