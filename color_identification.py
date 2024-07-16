@@ -1,3 +1,10 @@
+# V1
+# Meta Data Accuracy:         0.9302325581395349
+# Training Data Accuracy:     0.8072126297533729
+# Test Data Accuracy:         0.8220902612826604
+
+# -------------------------------------------------------
+
 import cv2
 import numpy as np
 import seaborn as sns
@@ -16,12 +23,8 @@ y_meta_color = []       # Stores meta data color
 
 # Subset 2: Partial Training Data
 X = []                  # Stores training images
-y = []                  # Stores labels of the training images (classID of each element in X)  
-y_color_train = []      # Stores training data color
-
-# Training Data
-X_train = []            # Combination of X and X_meta
-y_train = []            # Combination of y and y_meta
+y = []                  # Stores classID  
+y_color_train = []      # Stores colorID
 
 # Test Data
 X_test_read = []        # Stores test images 
@@ -79,25 +82,6 @@ def read_csv(csv_file_path, X1, y1, color_list):
 read_csv("data/Train.csv", X, y, y_color_train)
 read_csv("data/Test.csv", X_test_read, y_test_class, y_color_test)
 
-# Image Preprocessing ===================================================
-
-# def process(image):
-#     # Convert image to HSV
-#     hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-#     # Perform histogram equalization on the V channel
-#     v_channel = hsv_image[:, :, 2]                   # Convert image to hsv, where 2 pertains to 
-#                                                      # the value channel of HSV color space
-#     equalized_v = cv2.equalizeHist(v_channel)        # Ensuring only brightness is modified
-#     hsv_image[:, :, 2] = equalized_v
-#     # Get histogram for hue channel
-#     hist = cv2.calcHist([hsv_image], [0], None, [256], [0, 256])
-#     # Normalize histogram
-#     hist = cv2.normalize(hist, hist).flatten()
-#     # Get most dominant color (most frequent hue value)
-#     dominant_color = np.argmax(hist)
-
-# Normalization
-
 # Extract Dominant Color ===================================================
 
 def extract_color_id(image):
@@ -129,50 +113,43 @@ def extract_color_id(image):
     mask_white = cv2.inRange(image_hsv, white_lower, white_upper)
     
     # Count the number of pixels in each mask
-    red_count = cv2.countNonZero(mask_red)
-    blue_count = cv2.countNonZero(mask_blue)
-    yellow_count = cv2.countNonZero(mask_yellow)
-    white_count = cv2.countNonZero(mask_white)
-
-    # Set alpha channel to 0 for white pixels
-    # image[mask_white != 0] = [0, 0, 0, 0]
+    red_count = cv2.countNonZero(mask_red)            # 0 ColorID
+    blue_count = cv2.countNonZero(mask_blue)          # 1 ColorID
+    yellow_count = cv2.countNonZero(mask_yellow)      # 2 ColorID
+    white_count = cv2.countNonZero(mask_white)        # 3 ColorID
     
     # Determine the dominant color and map to color ID
-    sum_pixels =red_count+ blue_count+ yellow_count + white_count
+    sum_pixels =red_count + blue_count + yellow_count + white_count
     color_counts = [red_count, blue_count, yellow_count]
     if max(color_counts) < ((sum_pixels)/98):
-        color_id =  3   # white_count
+        color_id =  3   # If red, blue, and yellow count too low, default to white as dominant color
     else:
         color_id = color_counts.index(max(color_counts))
-    # color_id = color_counts.index(max(color_counts))
     return color_id
 
-# Test accuracy for meta
-for i in range(20):
-    # if i < 10:
+# Test accuracy for meta data
+length = len(X_meta):
+for i in range(length):
     print("Label", y_meta[i])
     print("Actual", y_meta_color[i])
     extracted = extract_color_id(X_meta[i])
     print("Predicted", extracted)
 
-# # Test accuracy for train
-# length = len(y)
-# for i in range(length):
-#     # if i < 10:
-#     print("Label", y[i])
-#     print("Actual", y_color_train[i])
-#     extracted = extract_color_id(X[i])
-#     print("Predicted", extracted)
+# Test accuracy for train data
+length = len(y)
+for i in range(length):
+    print("Label", y[i])
+    print("Actual", y_color_train[i])
+    extracted = extract_color_id(X[i])
+    print("Predicted", extracted)
 
-# # Test accuracy for tests:
-# length = len(X_test_read)
-# for i in range(length):
-#     # if i < 10:
-#     print("Label", y_test_class[i])
-#     print("Actual", y_color_test[i])
-#     extracted = extract_color_id(X_test_read[i])
-#     print("Predicted", extracted)
-
+# Test accuracy for test data
+length = len(X_test_read)
+for i in range(length):
+    print("Label", y_test_class[i])
+    print("Actual", y_color_test[i])
+    extracted = extract_color_id(X_test_read[i])
+    print("Predicted", extracted)
 
 # Evaluate accuracy and create confusion matrices ===================================================
 
@@ -182,11 +159,7 @@ def evaluate_and_confusion_matrix(X_data, y_actual_color):
     conf_matrix = confusion_matrix(y_actual_color, y_pred_color)
     
     return accuracy, conf_matrix
-
-# Combine Meta and Train data
-X_combined = X_meta + X
-y_combined_color = y_meta_color + y_color_train
-
+    
 # Evaluate accuracy for meta data
 meta_accuracy, meta_conf_matrix = evaluate_and_confusion_matrix(X_meta, y_meta_color)
 
@@ -212,10 +185,10 @@ def plot_confusion_matrix(cm, title, save_path=None):
     if save_path:
         plt.savefig(save_path)
         print(f"Confusion matrix saved to {save_path}")
+    
     plt.show()
 
-# plot_confusion_matrix(meta_conf_matrix, 'Confusion Matrix for Meta Data', 'meta_conf_matrix.png')
+plot_confusion_matrix(meta_conf_matrix, 'Confusion Matrix for Meta Data', 'meta_conf_matrix.png')
 plot_confusion_matrix(train_conf_matrix, 'Confusion Matrix for Training Data', 'train_conf_matrix.png')
 plot_confusion_matrix(test_conf_matrix, 'Confusion Matrix for Test Data', 'test_conf_matrix.png')
-
 
